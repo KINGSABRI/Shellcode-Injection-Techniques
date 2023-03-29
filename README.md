@@ -1,17 +1,39 @@
 # Shellcode Injection Techniques
-A collection of C# shellcode injection techniques. All techniques use an AES encrypted meterpreter payload.
-
-I will be building this project up as I learn, discover or develop more techniques.
+A collection of C# shellcode injection techniques. 
 
 **Note:** The project is not intended to be used as-is. If you are going to use any of the techniques there is a better chance of bypassing AV if you create a smaller, customised project with your chosen technique.
 
 If you do use any of the code in these repositories **keep it legal!**
 
-## Assembly Injection
-You can use a [PowerShell assembly injection technique](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/assembly-injection.ps1) if you want to avoid writing .Net binaries to disk.
+## Usage: 
 
-## Shellcode Runner
-[ShellcodeRunner.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ShellcodeRunner.cs) : This technique isn't strictly an injection technique (because we execute the shellcode in the same process) but is the simplest of all techniques. We ensure the shellcode uses a fixed memory location in an `unsafe` context. We change the protection on the page where the shellcode is located so we can execute it. We then use a C# delegate function to execute the shellcode.
+```
+> Shellcode-Injection-Techniques.exe 
+Please enter technique number, shellcode file and process id.
+Usage: Injector <technique no.> <SHELLCODE> [PID - default: notepad pid]
+  1. Shellcode Runner
+  2. Classic Injection
+  3. Thread Hijacking
+  4. Local Thread Hijacking
+  5. Asychronous Procedure Call Injection(APC Injection)
+  6. Process Hollowing
+  7. Inter - Process Mapped View
+  8. Atom Bombing
+  9. Process Doppelgänging(TODO)
+```
+run with args 
+```
+> Shellcode-Injection-Techniques.exe 1 beacon_x64.bin
+> Shellcode-Injection-Techniques.exe 2 beacon_x64.bin
+> Shellcode-Injection-Techniques.exe 5 beacon_x64.bin 4345
+```
+
+## Details
+#### Assembly Injection
+You can use a [PowerShell assembly injection technique](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/assembly-injection.ps1) if you want to avoid writing .Net binaries to disk.
+
+### Shellcode Runner
+[ShellcodeRunner.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ShellcodeRunner.cs) : This technique isn't strictly an injection technique (because we execute the shellcode in the same process) but is the simplest of all techniques. We ensure the shellcode uses a fixed memory location in an `unsafe` context. We change the protection on the page where the shellcode is located so we can execute it. We then use a C# delegate function to execute the shellcode.
 
 ```
 [+] Using technique: ShellcodeInjectionTechniques.ShellcodeRunner
@@ -19,8 +41,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] Executing shellcode - memory address: 0x20D000418E0
 ```
 
-## Classic Injection
-[ClassicInjection.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ClassicInjection.cs) : This technique allocates memory in the target process, injects the shellcode and starts a new thread.
+### Classic Injection
+[ClassicInjection.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ClassicInjection.cs) : This technique allocates memory in the target process, injects the shellcode and starts a new thread.
 
 ```
 [+] Found process: 24484
@@ -30,8 +52,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] CreateRemoteThread() - thread handle: 0x380
 ```
 
-## Thread Hijacking
-[ThreadHijack.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ThreadHijack.cs) : This technique hijacks a thread by injection code into the target process, suspends the hijacked thread, sets the instruction pointer (RIP) to our injected code and then resumes the thread.
+### Thread Hijacking
+[ThreadHijack.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ThreadHijack.cs) : This technique hijacks a thread by injection code into the target process, suspends the hijacked thread, sets the instruction pointer (RIP) to our injected code and then resumes the thread.
 
 ```
 [+] Found process: 11508
@@ -47,8 +69,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] ResumeThread() - thread handle: 0x378
 ```
 
-## Local Thread Hijacking
-[LocalThreadHijack.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/LocalThreadHijack.cs) : This technique creates a new local thread in a suspended state, we then hijack the thread, sets the instruction pointer (RIP) to our injected code and then resume the thread.
+### Local Thread Hijacking
+[LocalThreadHijack.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/LocalThreadHijack.cs) : This technique creates a new local thread in a suspended state, we then hijack the thread, sets the instruction pointer (RIP) to our injected code and then resume the thread.
 
 ```
 [+] Using technique: ShellcodeInjectionTechniques.LocalThreadHijack
@@ -60,8 +82,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] ResumeThread() - thread handle: 0x374
 ```
 
-## Asychronous Procedure Call Injection
-[ACPInjection.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/APCInjection.cs) : This technique is similar to the Thread Hijacking technique. We inject the shellcode into a remote thread, then queue an APC object in the thread. When the thread enters an alertable state (when it calls `SleepEx`, `SignalObjectAndWait`, `MsgWaitForMultipleObjectsEx`, `WaitForMultipleObjectsEx`, or `WaitForSingleObjectEx`) it runs our shellcode pointed to by our queued APC object. 
+### Asychronous Procedure Call Injection
+[ACPInjection.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/APCInjection.cs) : This technique is similar to the Thread Hijacking technique. We inject the shellcode into a remote thread, then queue an APC object in the thread. When the thread enters an alertable state (when it calls `SleepEx`, `SignalObjectAndWait`, `MsgWaitForMultipleObjectsEx`, `WaitForMultipleObjectsEx`, or `WaitForSingleObjectEx`) it runs our shellcode pointed to by our queued APC object. 
 
 ```
 [+] Found process: 25320
@@ -73,8 +95,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] QueueUserAPC() - thread handle: 0x378
 ```
 
-## Process Hollowing
-[ProcessHollow.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ProcessHollow.cs) : This technique starts another process in the suspended state (svchost.exe), finds the main thread entry point, injects our shellcode into it then resumes the thread.
+### Process Hollowing
+[ProcessHollow.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/ProcessHollow.cs) : This technique starts another process in the suspended state (svchost.exe), finds the main thread entry point, injects our shellcode into it then resumes the thread.
 
 ```
 [+] Using technique: ShellcodeInjectionTechniques.ProcessHollow
@@ -88,8 +110,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] ResumeThread() - thread handle: 0x454
 ```
 
-## Inter-Process Mapped View
-[InterProcessMappedView.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/InterProcessMappedView.cs) : This technique creates a new section in memory, creates a local mapped view of the section, copies our shellcode into the local mapped view and creates a remote mapped view of the local mapped view in the target process. Finally we create a new thread in the target process with the mapped view as the entry point.
+### Inter-Process Mapped View
+[InterProcessMappedView.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/InterProcessMappedView.cs) : This technique creates a new section in memory, creates a local mapped view of the section, copies our shellcode into the local mapped view and creates a remote mapped view of the local mapped view in the target process. Finally we create a new thread in the target process with the mapped view as the entry point.
 
 ```
 [+] Found process: 23740
@@ -101,8 +123,8 @@ You can use a [PowerShell assembly injection technique](https://github.com/plack
 [+] RtlCreateUserThread() - thread handle: 0x384
 ```
 
-## Atom Bombing
-[AtomBomb.cs](https://github.com/plackyhacker/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/AtomBomb.cs) : This technique is interesting in how we write shellcode to the target process. We use the Global Atom Table which allows us to write null terminated strings with a maximum size of 255 bytes. We find a code cave to write our shellcode to, then use APC calls to trigger the target process to read the Atom Names into memory. Finally we use a couple of APC calls to change the memory protection of the target and execute the shellcode.
+### Atom Bombing
+[AtomBomb.cs](https://github.com/KINGSABRI/Shellcode-Injection-Techniques/blob/master/ShellcodeInjectionTechniques/Techniques/AtomBomb.cs) : This technique is interesting in how we write shellcode to the target process. We use the Global Atom Table which allows us to write null terminated strings with a maximum size of 255 bytes. We find a code cave to write our shellcode to, then use APC calls to trigger the target process to read the Atom Names into memory. Finally we use a couple of APC calls to change the memory protection of the target and execute the shellcode.
 
 My code differs from the original [Atom Bombing](https://www.fortinet.com/blog/threat-research/atombombing-brand-new-code-injection-technique-for-windows) technique, written in C/C++. First, I chain Atom Names together, using multiple APCs, to form a shellcode of larger than 255 bytes. I don't use ROP chains to force the target process to call `VirtualProtect` and then execute the code, I use the APC queue.
 
